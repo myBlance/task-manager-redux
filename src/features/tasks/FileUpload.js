@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, TextField, List, ListItem, ListItemText, IconButton } from "@mui/material";
+import { Button, TextField, List, ListItem, ListItemText } from "@mui/material";
 
 
 const FileUpload = () => {
@@ -29,7 +29,11 @@ const FileUpload = () => {
                 console.error("Error reading file:", error);
             };
 
-            reader.readAsText(selectedFile); 
+            if (selectedFile.type.startsWith("image/")) {
+                reader.readAsDataURL(selectedFile); // Read image files as Data URL for preview
+            } else {
+                reader.readAsText(selectedFile); // Read other files as text
+            }
         }
     };
 
@@ -64,12 +68,22 @@ const FileUpload = () => {
         <div style={{ margin: "20px 0" }}>
             {/* Form upload */}
             <form onSubmit={handleUpload} style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-                <TextField type="file" onChange={handleFileChange} inputProps={{ accept: "*" }} />
+                <TextField 
+                    type="file" 
+                    onChange={handleFileChange} 
+                    inputProps={{ accept: "*" }} 
+                />
                 <Button type="submit" variant="contained" color="primary">
                     Upload
                 </Button>
             </form>
 
+            {fileContent && (
+                <div>
+                    <h3>File upload:</h3>
+                    <img src={fileContent} alt="Preview" style={{ maxWidth: "100%", maxHeight: "300px" }} />
+                </div>
+            )}
             {/* Danh sách file đã lưu */}
             <List>
                 {fileList.map((file) => (
