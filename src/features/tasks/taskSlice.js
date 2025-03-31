@@ -10,8 +10,7 @@ const initialState = {
   tasks: loadTasksFromLocalStorage(), // Khởi tạo từ localStorage
 };
 
-
-
+// Tạo slice cho tasks
 const taskSlice = createSlice({
   name: "tasks",
   initialState,
