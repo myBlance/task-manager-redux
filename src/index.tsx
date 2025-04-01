@@ -14,7 +14,7 @@ const persistor = persistStore(store);
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-        <PersistGate loading={<div>Đang tải dữ liệu...</div>} persistor={persistor}>
+        <PersistGate loading={"Loading..."} persistor={persistor}>
           <App />
         </PersistGate>
     </Provider>
