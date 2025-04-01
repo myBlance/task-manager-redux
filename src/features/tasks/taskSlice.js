@@ -23,11 +23,11 @@ const taskSlice = createSlice({
       const index = state.tasks.findIndex((task) => task.id === action.payload.id);
       if (index !== -1) {
         state.tasks[index] = {
-          ...state.tasks[index], // Keep existing properties
-          ...action.payload, // Overwrite with new properties
+          ...state.tasks[index], 
+          ...action.payload, // Cập nhật công việc
         };
       }
-      localStorage.setItem("tasks", JSON.stringify(state.tasks)); // Persist changes
+      localStorage.setItem("tasks", JSON.stringify(state.tasks)); 
     },
     removeTask: (state, action) => {
       state.tasks = state.tasks.filter((task) => task.id !== action.payload);

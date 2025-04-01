@@ -44,7 +44,7 @@ const FileUpload = () => {
       type: file.type,
     };
 
-    dispatch(addFile(newFile)); // Dispatch the addFile action
+    dispatch(addFile(newFile)); 
     setFile(null);
     setFileContent("");
   };
