@@ -5,7 +5,7 @@ import { Button, TextField, List, ListItem, ListItemText } from "@mui/material";
 const FileUpload = () => {
     const [file, setFile] = useState(null);
     const [fileList, setFileList] = useState([]);
-    const [fileContent, setFileContent] = useState(""); // State to store file content
+    const [fileContent, setFileContent] = useState(""); 
 
     // Load danh sách file từ localStorage 
     useEffect(() => {
@@ -13,7 +13,7 @@ const FileUpload = () => {
         setFileList(savedFiles);
     }, []);
 
-    // Khi người dùng chọn file
+    // Khi chọn file
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         setFile(selectedFile);
@@ -30,9 +30,9 @@ const FileUpload = () => {
             };
 
             if (selectedFile.type.startsWith("image/")) {
-                reader.readAsDataURL(selectedFile); // Read image files as Data URL for preview
+                reader.readAsDataURL(selectedFile); 
             } else {
-                reader.readAsText(selectedFile); // Read other files as text
+                reader.readAsText(selectedFile); 
             }
         }
     };
@@ -84,7 +84,8 @@ const FileUpload = () => {
                     <img src={fileContent} alt="Preview" style={{ maxWidth: "100%", maxHeight: "300px" }} />
                 </div>
             )}
-            {/* Danh sách file đã lưu */}
+           
+            {/* Danh sách file upload*/}
             <List>
                 {fileList.map((file) => (
                     <ListItem key={file.id}>
