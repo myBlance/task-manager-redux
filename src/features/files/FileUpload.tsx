@@ -1,24 +1,24 @@
-import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { Button, List, ListItem, ListItemText, TextField } from "@mui/material";
+import React, { ChangeEvent, FormEvent, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../app/store";
 import { addFile, removeFile } from "./fileSlice";
-import { Button, TextField, List, ListItem, ListItemText } from "@mui/material";
 
-const FileUpload = () => {
+const FileUpload: React.FC = () => {
   const dispatch = useDispatch();
-  const fileList = useSelector((state) => state.files.fileList);
+  const fileList = useSelector((state: RootState) => state.files.fileList); 
 
-  const [file, setFile] = useState(null);
-  const [fileContent, setFileContent] = useState("");
-
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
+  const [file, setFile] = useState<File | null>(null); 
+  const [fileContent, setFileContent] = useState<string>(""); 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null; 
     setFile(selectedFile);
 
     if (selectedFile) {
       const reader = new FileReader();
 
       reader.onload = (event) => {
-        setFileContent(event.target.result);
+        setFileContent(event.target?.result as string); 
       };
 
       reader.onerror = (error) => {
@@ -28,12 +28,12 @@ const FileUpload = () => {
       if (selectedFile.type.startsWith("image/")) {
         reader.readAsDataURL(selectedFile);
       } else {
-        reader.readAsText(selectedFile);
+        reader.readAsText(selectedFile); 
       }
     }
   };
 
-  const handleUpload = (e) => {
+  const handleUpload = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) return;
 
@@ -46,16 +46,16 @@ const FileUpload = () => {
 
     dispatch(addFile(newFile)); 
     setFile(null);
-    setFileContent("");
+    setFileContent(""); 
   };
 
-  const handleDelete = (id) => {
-    dispatch(removeFile(id)); // Dispatch the removeFile action
+  const handleDelete = (id: number) => {
+    dispatch(removeFile(id)); 
   };
 
   return (
     <div style={{ margin: "20px 0" }}>
-      {/* Form upload */}
+      {/* File upload form */}
       <form onSubmit={handleUpload} style={{ display: "flex", gap: "20px", alignItems: "center" }}>
         <TextField
           type="file"
@@ -67,9 +67,10 @@ const FileUpload = () => {
         </Button>
       </form>
 
+      {/* File preview */}
       {fileContent && (
         <div>
-          <h3>File upload:</h3>
+          <h3>File Preview:</h3>
           <img src={fileContent} alt="Preview" style={{ maxWidth: "100%", maxHeight: "300px" }} />
         </div>
       )}
