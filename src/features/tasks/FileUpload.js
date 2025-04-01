@@ -1,107 +1,96 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { addFile, removeFile } from "./fileSlice";
 import { Button, TextField, List, ListItem, ListItemText } from "@mui/material";
 
-
 const FileUpload = () => {
-    const [file, setFile] = useState(null);
-    const [fileList, setFileList] = useState([]);
-    const [fileContent, setFileContent] = useState(""); 
+  const dispatch = useDispatch();
+  const fileList = useSelector((state) => state.files.fileList);
 
-    // Load danh sách file từ localStorage 
-    useEffect(() => {
-        const savedFiles = JSON.parse(localStorage.getItem("uploadedFiles")) || [];
-        setFileList(savedFiles);
-    }, []);
+  const [file, setFile] = useState(null);
+  const [fileContent, setFileContent] = useState("");
 
-    // Khi chọn file
-    const handleFileChange = (e) => {
-        const selectedFile = e.target.files[0];
-        setFile(selectedFile);
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
 
-        if (selectedFile) {
-            const reader = new FileReader();
+    if (selectedFile) {
+      const reader = new FileReader();
 
-            reader.onload = (event) => {
-                setFileContent(event.target.result);
-            };
+      reader.onload = (event) => {
+        setFileContent(event.target.result);
+      };
 
-            reader.onerror = (error) => {
-                console.error("Error reading file:", error);
-            };
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+      };
 
-            if (selectedFile.type.startsWith("image/")) {
-                reader.readAsDataURL(selectedFile); 
-            } else {
-                reader.readAsText(selectedFile); 
-            }
-        }
+      if (selectedFile.type.startsWith("image/")) {
+        reader.readAsDataURL(selectedFile);
+      } else {
+        reader.readAsText(selectedFile);
+      }
+    }
+  };
+
+  const handleUpload = (e) => {
+    e.preventDefault();
+    if (!file) return;
+
+    const newFile = {
+      id: new Date().getTime(),
+      name: file.name,
+      size: file.size,
+      type: file.type,
     };
 
-    // Lưu file vào localStorage
-    const handleUpload = (e) => {
-        e.preventDefault();
-        if (!file) return;
+    dispatch(addFile(newFile)); // Dispatch the addFile action
+    setFile(null);
+    setFileContent("");
+  };
 
-        const newFile = {
-            id: new Date().getTime(), // ID duy nhất
-            name: file.name,
-            size: file.size,
-            type: file.type
-        };
+  const handleDelete = (id) => {
+    dispatch(removeFile(id)); // Dispatch the removeFile action
+  };
 
-        const updatedFileList = [...fileList, newFile];
+  return (
+    <div style={{ margin: "20px 0" }}>
+      {/* Form upload */}
+      <form onSubmit={handleUpload} style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+        <TextField
+          type="file"
+          onChange={handleFileChange}
+          inputProps={{ accept: "*" }}
+        />
+        <Button type="submit" variant="contained" color="primary">
+          Upload
+        </Button>
+      </form>
 
-        // Lưu vào localStorage
-        localStorage.setItem("uploadedFiles", JSON.stringify(updatedFileList));
-        setFileList(updatedFileList);
-        setFile(null);
-    };
-
-    // Xóa file khỏi localStorage
-    const handleDelete = (id) => {
-        const updatedFileList = fileList.filter(file => file.id !== id);
-        localStorage.setItem("uploadedFiles", JSON.stringify(updatedFileList));
-        setFileList(updatedFileList);
-    };
-
-    return (
-        <div style={{ margin: "20px 0" }}>
-            {/* Form upload */}
-            <form onSubmit={handleUpload} style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-                <TextField 
-                    type="file" 
-                    onChange={handleFileChange} 
-                    inputProps={{ accept: "*" }} 
-                />
-                <Button type="submit" variant="contained" color="primary">
-                    Upload
-                </Button>
-            </form>
-
-            {fileContent && (
-                <div>
-                    <h3>File upload:</h3>
-                    <img src={fileContent} alt="Preview" style={{ maxWidth: "100%", maxHeight: "300px" }} />
-                </div>
-            )}
-           
-            {/* Danh sách file upload*/}
-            <List>
-                {fileList.map((file) => (
-                    <ListItem key={file.id}>
-                        <ListItemText primary={file.name}  />
-                        <Button 
-                            variant="contained"
-                            color="secondary" 
-                            onClick={() => handleDelete(file.id)}
-                        >
-                            Xóa
-                        </Button>
-                    </ListItem>
-                ))}
-            </List>
+      {fileContent && (
+        <div>
+          <h3>File upload:</h3>
+          <img src={fileContent} alt="Preview" style={{ maxWidth: "100%", maxHeight: "300px" }} />
         </div>
-    );
+      )}
+
+      {/* List of uploaded files */}
+      <List>
+        {fileList.map((file) => (
+          <ListItem key={file.id}>
+            <ListItemText primary={file.name} />
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => handleDelete(file.id)}
+            >
+              Xóa
+            </Button>
+          </ListItem>
+        ))}
+      </List>
+    </div>
+  );
 };
 
 export default FileUpload;
