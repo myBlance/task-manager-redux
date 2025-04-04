@@ -1,5 +1,16 @@
-import { Button, List, ListItem, ListItemText, TextField, Snackbar } from "@mui/material";
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import { 
+    Button, 
+    List, 
+    ListItem, 
+    ListItemText, 
+    TextField, 
+    Snackbar 
+} from "@mui/material";
+import React, { 
+    ChangeEvent, 
+    FormEvent, 
+    useState 
+} from "react";
 import axios from "axios";
 import MuiAlert from "@mui/material/Alert";
 
@@ -75,10 +86,22 @@ const FileUpload: React.FC = () => {
         }
     };
 
-    const handleDelete = (id: number) => {
-        setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
-        setSnackbarMessage("File deleted successfully!");
-        setSnackbarOpen(true);
+    const handleDelete = async (id: number, fileUrl: string) => {
+        try {
+            const fileUUID = fileUrl.split("/").slice(-2, -1)[0];
+            await axios.delete(`https://api.uploadcare.com/files/${fileUUID}/`, {
+                headers: {
+                    Authorization: `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:df4288ce67f60455fa78`,
+                },
+            });
+            setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
+            setSnackbarMessage("File deleted successfully!");
+        } catch (error) {
+            console.error("Error deleting file:", error);
+            setSnackbarMessage("Error deleting file!");
+        } finally {
+            setSnackbarOpen(true);
+        }
     };
 
     const handleCloseSnackbar = () => {
@@ -116,21 +139,7 @@ const FileUpload: React.FC = () => {
                         <Button
                             variant="contained"
                             color="secondary"
-                            onClick={async () => {
-                                try {
-                                    const fileUUID = file.url.split("/").slice(-2, -1)[0];
-                                    await axios.delete(`https://api.uploadcare.com/files/${fileUUID}/`, {
-                                        headers: {
-                                            Authorization: `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:df4288ce67f60455fa78`,
-                                        },
-                                    });
-                                    handleDelete(file.id);
-                                } catch (error) {
-                                    console.error("Error deleting file:", error);
-                                    setSnackbarMessage("Error deleting file!");
-                                    setSnackbarOpen(true);
-                                }
-                            }}
+                            onClick={() => handleDelete(file.id, file.url)}
                         >
                             Xóa
                         </Button>
