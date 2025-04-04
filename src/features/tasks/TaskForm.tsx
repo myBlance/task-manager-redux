@@ -1,20 +1,19 @@
 import { Button, TextField } from "@mui/material";
 import React, { ChangeEvent, FormEvent, useState } from "react";
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../app/store"; // Import AppDispatch for typed dispatch
+import { AppDispatch } from "../../app/store"; 
 import { addTask } from "./taskSlice";
 
 const TaskForm: React.FC = () => {
-  const [title, setTitle] = useState<string>(""); // Typed state for the task title
-  const dispatch = useDispatch<AppDispatch>(); // Typed useDispatch
+  const [title, setTitle] = useState<string>(""); 
+  const dispatch = useDispatch<AppDispatch>(); 
 
-  // Handle form submission
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (title.trim() === "") return;
 
-    dispatch(addTask({ id: Date.now(), title })); // Dispatch the addTask action
-    setTitle(""); // Clear the input field
+    dispatch(addTask({ id: Date.now(), title })); 
+    setTitle(""); 
   };
 
   // Handle input change
@@ -28,7 +27,7 @@ const TaskForm: React.FC = () => {
         label="Nhập công việc"
         variant="outlined"
         value={title}
-        onChange={handleChange} // Use the typed handleChange function
+        onChange={handleChange} 
       />
       <Button type="submit" variant="contained" color="primary">
         Thêm
