@@ -12,8 +12,8 @@ import React, {
     useState, 
     useEffect 
 } from "react";
-import axios from "axios";
 import MuiAlert from "@mui/material/Alert";
+import uploadcareService from "../../services/uploadcareService"; // Import the service
 
 const FileUpload: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -27,24 +27,11 @@ const FileUpload: React.FC = () => {
     }>>([]);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
-    const UPLOADCARE_PUBLIC_KEY = process.env.REACT_APP_UPLOADCARE_PUBLIC_KEY || ""; 
 
     useEffect(() => {
         const fetchFiles = async () => {
             try {
-                const response = await axios.get("https://api.uploadcare.com/files/", {
-                    headers: {
-                        Authorization: `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:df4288ce67f60455fa78`,
-                    },
-                });
-                const files = response.data?.results?.map((item: any) => ({
-                    id: new Date(item.datetime_uploaded).getTime(), // hoặc dùng uuid
-                    name: item.original_filename,
-                    size: item.size,
-                    type: item.mime_type,
-                    url: `https://ucarecdn.com/${item.uuid}/`,
-                })) || [];
-
+                const files = await uploadcareService.fetchFiles();
                 setUploadedFiles(files);
             } catch (error) {
                 console.error("Error fetching files from API:", error);
@@ -83,25 +70,8 @@ const FileUpload: React.FC = () => {
         e.preventDefault();
         if (!file) return;
 
-        const formData = new FormData();
-        formData.append("UPLOADCARE_PUB_KEY", UPLOADCARE_PUBLIC_KEY);
-        formData.append("UPLOADCARE_STORE", "1"); 
-        formData.append("file", file);
-
         try {
-            const response = await axios.post("https://upload.uploadcare.com/base/", formData);
-            const fileUUID = response.data.file;
-
-            const fileUrl = `https://ucarecdn.com/${fileUUID}/`;
-
-            const newFile = {
-                id: new Date().getTime(),
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                url: fileUrl,
-            };
-
+            const newFile = await uploadcareService.uploadFile(file);
             setUploadedFiles((prev) => [...prev, newFile]);
             setFile(null);
             setFileContent("");
@@ -116,12 +86,7 @@ const FileUpload: React.FC = () => {
 
     const handleDelete = async (id: number, fileUrl: string) => {
         try {
-            const fileUUID = fileUrl.split("/").slice(-2, -1)[0];
-            await axios.delete(`https://api.uploadcare.com/files/${fileUUID}/`, {
-                headers: {
-                    Authorization: `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:df4288ce67f60455fa78`,
-                },
-            });
+            await uploadcareService.deleteFile(fileUrl);
             setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
             setSnackbarMessage("File deleted successfully!");
         } catch (error) {
@@ -140,9 +105,9 @@ const FileUpload: React.FC = () => {
         <div style={{ margin: "20px 0" }}>
             <form onSubmit={handleUpload} style={{ display: "flex", gap: "20px", alignItems: "center" }}>
                 <TextField type="file" onChange={handleFileChange} inputProps={{ accept: "*" }} />
-                    <Button type="submit" variant="contained" color="primary">
-                        Upload
-                    </Button>
+                <Button type="submit" variant="contained" color="primary">
+                    Upload
+                </Button>
             </form>
 
             {fileContent && (
@@ -161,16 +126,16 @@ const FileUpload: React.FC = () => {
                             primary={`Tên: ${file.name}`}
                             secondary={`Kích thước: ${(file.size / 1024).toFixed(2)} KB | Loại: ${file.type}`}
                         />
-                            <Button sx={{ marginRight: 1 }} variant="contained" color="primary" onClick={() => window.open(file.url, "_blank")}>
-                                Xem
-                            </Button>
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                onClick={() => handleDelete(file.id, file.url)}
-                            >
-                                Xóa
-                            </Button>
+                        <Button sx={{ marginRight: 1 }} variant="contained" color="primary" onClick={() => window.open(file.url, "_blank")}>
+                            Xem
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => handleDelete(file.id, file.url)}
+                        >
+                            Xóa
+                        </Button>
                     </ListItem>
                 ))}
             </List>
