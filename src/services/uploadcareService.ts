@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const UPLOADCARE_PUBLIC_KEY = process.env.REACT_APP_UPLOADCARE_PUBLIC_KEY || "";
-const UPLOADCARE_SECRET_KEY = "df4288ce67f60455fa78";
+const UPLOADCARE_SECRET_KEY = process.env.REACT_APP_UPLOADCARE_SECRET_KEY || "";
 
 const fetchFiles = async () => {
     const response = await axios.get("https://api.uploadcare.com/files/", {
