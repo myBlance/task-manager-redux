@@ -9,7 +9,8 @@ import {
 import React, { 
     ChangeEvent, 
     FormEvent, 
-    useState 
+    useState, 
+    useEffect 
 } from "react";
 import axios from "axios";
 import MuiAlert from "@mui/material/Alert";
@@ -26,7 +27,34 @@ const FileUpload: React.FC = () => {
     }>>([]);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
-    const UPLOADCARE_PUBLIC_KEY = "795e9d708e3780c1f5b4"; 
+    const UPLOADCARE_PUBLIC_KEY = process.env.REACT_APP_UPLOADCARE_PUBLIC_KEY || ""; 
+
+    useEffect(() => {
+        const fetchFiles = async () => {
+            try {
+                const response = await axios.get("https://api.uploadcare.com/files/", {
+                    headers: {
+                        Authorization: `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:df4288ce67f60455fa78`,
+                    },
+                });
+                const files = response.data?.results?.map((item: any) => ({
+                    id: new Date(item.datetime_uploaded).getTime(), // hoặc dùng uuid
+                    name: item.original_filename,
+                    size: item.size,
+                    type: item.mime_type,
+                    url: `https://ucarecdn.com/${item.uuid}/`,
+                })) || [];
+
+                setUploadedFiles(files);
+            } catch (error) {
+                console.error("Error fetching files from API:", error);
+                setSnackbarMessage("Error fetching files!");
+                setSnackbarOpen(true);
+            }
+        };
+
+        fetchFiles();
+    }, []);
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0] || null;
@@ -129,26 +157,31 @@ const FileUpload: React.FC = () => {
             <List>
                 {uploadedFiles.map((file) => (
                     <ListItem key={file.id}>
-                    <ListItemText
-                        primary={`Tên: ${file.name}`}
-                        secondary={`Kích thước: ${(file.size / 1024).toFixed(2)} KB | Loại: ${file.type}`}
-                    />
-                        <Button sx={{ marginRight: 1 }} variant="contained" color="primary" onClick={() => window.open(file.url, "_blank")}>
-                            Xem
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={() => handleDelete(file.id, file.url)}
-                        >
-                            Xóa
-                        </Button>
+                        <ListItemText
+                            primary={`Tên: ${file.name}`}
+                            secondary={`Kích thước: ${(file.size / 1024).toFixed(2)} KB | Loại: ${file.type}`}
+                        />
+                            <Button sx={{ marginRight: 1 }} variant="contained" color="primary" onClick={() => window.open(file.url, "_blank")}>
+                                Xem
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                onClick={() => handleDelete(file.id, file.url)}
+                            >
+                                Xóa
+                            </Button>
                     </ListItem>
                 ))}
             </List>
 
             <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                <MuiAlert elevation={6} variant="filled" onClose={handleCloseSnackbar} severity={snackbarMessage.includes("Error") ? "error" : "success"}>
+                <MuiAlert 
+                    elevation={6} 
+                    variant="filled" 
+                    onClose={handleCloseSnackbar} 
+                    severity={snackbarMessage.includes("Error") ? "error" : "success"}
+                >
                     {snackbarMessage}
                 </MuiAlert>
             </Snackbar>
